@@ -73,24 +73,21 @@ int main()
     Ticks[0] = clock();
     for (num = lastPrimo; num <= teste; num++)
     {
-        for (cont = 2; cont <= sqrt(num); cont++)
+        cont = 2;
+        while (cont <= sqrt(num) && primo == 1)
         {
-            cont = 2;
-            while(cont <= sqrt(num) && primo == 1){
-                i++;
-                if (fmod(num, cont) == 0)
+            i++;
+            if (fmod(num, cont) == 0)
+            {
+                if (primo == 1)
                 {
-                    if (primo == 1)
-                    {
-                        primo = 0;
-                    }
+                    primo = 0;
                 }
-                cont++;
             }
+            cont++;
         }
-        
 
-            if (primo == 1)
+        if (primo == 1)
         {
             printf("%i primo\n", num);
             fprintf(fp, "%i\n", num);
