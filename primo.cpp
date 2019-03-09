@@ -75,13 +75,17 @@ int main()
     {
         for (cont = 2; cont <= sqrt(num); cont++)
         {
-            i++;
-            if (fmod(num, cont) == 0)
-            {
-                if (primo == 1)
+            cont = 2;
+            while(cont <= sqrt(num) && primo == 1){
+                i++;
+                if (fmod(num, cont) == 0)
                 {
-                    primo = 0;
+                    if (primo == 1)
+                    {
+                        primo = 0;
+                    }
                 }
+                cont++;
             }
         }
         
