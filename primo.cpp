@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -36,6 +37,8 @@ int indexOf(list *lista, Node *node);               //Busca a posicao de um node
 Node *atPos(list *lista, int index);                //Busca um node em uma determinada posicao
 void printList(list *lista);                        //Imprime a lista
 void final(list *lista, DataNode data);             //Adiciona no fim da lista
+void menu(void);
+void clrscr(void);
 
 //===Variaveis globais===
 unsigned long int num, cont, primo = 1, nprimo = 0, teste, lastPrimo = 1, point = 0;
@@ -45,6 +48,7 @@ double i = 0, calcSeg;
 //===Funcao Main===
 int main()
 {
+    menu();
     //Cria a lista
     list *l = createList();
     DataNode data;
@@ -386,4 +390,60 @@ void final(list *lista, DataNode data)
     {
         push(lista, data);
     }
+}
+void clrscr(void)
+{
+    system("cls");
+}
+
+void menu(void)
+{
+    int op;
+    do
+    {
+        clrscr();
+        printf("=== Menu ===\n");
+        printf("1 - Carregar valores\n");
+        printf("2 - Calcular ate um Valor\n");
+        printf("3 - Testar valor unico\n");
+        printf("0 - Sair\n");
+
+        printf("\nEscolha uma opcao: ");
+
+        scanf("%i", &op);
+
+        switch (op)
+        {
+        case 1:
+            clrscr();
+            printf("Carregar Valores\n");
+            system("PAUSE");
+            break;
+        
+        case 2:
+            clrscr();
+            printf("Calcular ate valor\n");
+            system("PAUSE");
+            break;
+        
+        case 3:
+            clrscr();
+            printf("Testar valor unico\n");
+            system("PAUSE");
+            break;
+        
+        case 0:
+            clrscr();
+            printf("Saindo\n");
+            system("PAUSE");
+            break;
+        default:
+            clrscr();
+            printf("Opcao Invalida\n");
+            system("PAUSE");
+            break;
+        }
+    } while (op != 0);
+    
+    
 }
