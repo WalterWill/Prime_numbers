@@ -48,7 +48,7 @@ double i = 0, calcSeg;
 //===Funcao Main===
 int main()
 {
-    //menu();
+    menu();
     //Cria a lista
     list *l = createList();
     DataNode data;
