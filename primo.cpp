@@ -1,389 +1,449 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
 #include <iostream>
+#include <stdio.h>
+#include <malloc.h>
+#include <conio.h>
+#include <math.h>
 #include <time.h>
-//===Estruturas===
-typedef struct datanode
-{
-    unsigned long int primo;
-} DataNode;
+#include <fstream>
+#include <string>
 
-typedef struct node
-{
-    DataNode number;
-    struct node *next;
-} Node;
+using namespace std;
 
-typedef struct list
-{
-    int size;
-    Node *head;
-    Node *last;
-} list;
+// Estruturas
+struct nodo{
+    int num;
+    struct nodo *prox, *ant;
+};
 
-//===Classes===
+struct header{
+    struct nodo *inicio, *fim;
+    int qntd;
+};
 
-//===Prototipo das Funcoes===
-list *createList();                                 //Cria a lista
-void push(list *lista, datanode data);              //Insere um node no inicio da lista
-void pop(list *lista);                              //Apaga o primeiro node da lista
-void insert(list *lista, DataNode data, int index); //Insere um node em um ponto especifico
-void erase(list *lista, int index);                 //Exclui um node em um ponto especifico
-bool isEmpty(list *lista);                          //Verifica se a lista esta vazia
-int indexOf(list *lista, Node *node);               //Busca a posicao de um node
-Node *atPos(list *lista, int index);                //Busca um node em uma determinada posicao
-void printList(list *lista);                        //Imprime a lista
-void final(list *lista, DataNode data);             //Adiciona no fim da lista
-
-//===Variaveis globais===
-unsigned long int num, cont, primo = 1, nprimo = 0, teste, lastPrimo = 1, point = 0;
-
-double i = 0, calcSeg;
-
-//===Funcao Main===
+// Prototipo das funcoes
+void cria_lista (struct header **listad);
+void insere_direita (struct header  *listad , int valor);
+void mostra_lista (struct header *listad );
+bool check_primo (int n, struct header *listad);
+void iniciar_lista(struct header *listad);
+void check_redundancia(struct header *listad);
+void insere_primo(struct header *listad, int n);
+void libera_lista (struct header **listad );
+void menu(struct header *listad);
+void valor_unico(struct header *listad);
+void valor_intervalo(struct header *listad);
+void db_read(struct header *listad);
+void db_write(struct header *listad);
+// Main
 int main()
 {
-    //Cria a lista
-    list *l = createList();
-    DataNode data;
+    struct header *L;
+    int num;
 
-    //Cria arquivo se não existir
-    FILE *fp;
-    fp = fopen("primos.txt", "a");
-    if (fp == NULL)
+    cria_lista(&L);
+    iniciar_lista(L);
+    /*
+    mostra_lista(L);
+    insere_primo(L,2);
+    mostra_lista(L);
+    insere_primo(L,3);
+    mostra_lista(L);
+    insere_primo(L,4);
+    mostra_lista(L);
+    insere_primo(L,7);
+    mostra_lista(L);
+    insere_primo(L,5);
+    mostra_lista(L);
+
+    libera_lista(&L);
+    */
+
+    menu(L);
+}
+
+// Funcoes
+void cria_lista (struct header **listad)
+{
+   struct header *lista=NULL;
+   lista = (struct header *) malloc(sizeof(struct header));
+
+   lista->inicio = NULL;
+   lista->qntd   = 0;
+   lista->fim    = NULL;
+
+   *listad=lista;
+}
+
+void insere_direita (struct header  *listad , int valor)
+{
+ 	struct nodo  *p, *aux;
+	p= (struct nodo *) malloc(sizeof(struct nodo));
+    p->num = valor;
+    p->ant = listad->fim;
+    if (p->ant != NULL)
     {
-        printf("Erro ao criar o arquivo\n");
-        return 1;
+        aux = listad->fim;
+        aux->prox = p;
     }
-    fclose(fp);
+    p->prox = NULL;
+    listad->fim  = p;
+    (listad->qntd)++;
 
-    //Abrir arquivo para leitura
-    fp = fopen("primos.txt", "r");
-    if (fp == NULL)
+    if (listad->inicio == NULL)  //Se lista estava vazia...
     {
-        printf("Erro ao abrir o arquivo\n");
-        return 1;
+        listad->inicio = p;
     }
-    printf("Arquivo PRIMOS aberto com sucesso.\n");
-      
-    //Ir para o final do arquivo
-    while ((fscanf(fp, "%i\n", &lastPrimo)) != EOF)
+}
+
+void mostra_lista (struct header *listad)
+{
+  struct nodo *aux ;
+  aux = listad->inicio;
+  printf("\nLista ===> \n");
+  while (aux != NULL)
+  {
+      printf("Valor: %i - ", aux->num);
+      aux = aux->prox;
+   }
+  printf("\n");
+}
+
+bool check_primo (int n, struct header *listad)
+{
+    if (n < 1)
     {
-        //Le o arquivo e salva o numero na lista
-        data.primo = lastPrimo;
-        final(l,data);
-        point++;
-
-    }
-
-    //Fechar arquivo
-    fclose(fp);
-
-    //Se estiver vazia, grava o numero 2
-    if (lastPrimo == 1) {
-        fp = fopen("primos.txt", "a");
-        if (fp == NULL)
+        return false;
+    }else{
+        if (listad->qntd != 0)
         {
-            printf("Erro ao abrir o arquivo\n");
-            return 1;
-        }
+            struct nodo *aux;
+            aux = listad->inicio;
 
-        fprintf(fp,"%i\n", 2);
-        data.primo = 2;
-        final(l, data);
-        point++;
-        fclose(fp);
-    }
-    
+            bool status = true;
 
-    printf("Ultimo Primo = %i\n", lastPrimo);
-    printf("Tamanho da lista = %i\n", l->size);
-    printf("Point = %i\n", point);
-    printList(l);
-    system("PAUSE");
+            float limit = sqrt(n);
 
-    //Atualiza o ultimo numero calculado
-    lastPrimo++;
-
-    //Le um novo numero
-    printf("Calcular ate: ");
-    scanf("%i", &teste);
-
-    //Verifica se o usuario digitou um numero maior
-    if (teste < lastPrimo)
-    {
-        printf("Entrada invalida");
-        return 0;
-    }
-
-    //Abre no final do arquivo
-    fp = fopen("primos.txt", "a");
-    if (fp == NULL)
-    {
-        printf("Erro ao abrir o arquivo\n");
-        return 1;
-    }
-
-    //Iniciando relogio
-    clock_t Ticks[2];
-    Ticks[0] = clock();
-    
-    //Calculo
-    for (num = lastPrimo; num <= teste; num++)
-    {
-        point = 1;
-        while ((atPos(l,point - 1)->number.primo) <= sqrt(num) && primo == 1)
-        {
-            if (fmod(num, (atPos(l, point - 1)->number.primo)) == 0)
+            while ((aux->num <= limit) and (status))
             {
-                i++;
-                if (primo == 1)
+                if ((fmod(n, aux->num)) == 0)
                 {
-                    primo = 0;
+                    status = false;
                 }
+
+                aux = aux->prox;
+                
             }
 
-            point++;
-        }
+            return status;
 
-        if (primo == 1)
+        }else
         {
-            
-            //printf("%i primo\n", num);  //Printa primo
-            //fprintf(fp, "%i\n", num);   //Grava primo
-            //nprimo++;                   //Incrementa o N de primos
-            
+            float limit = sqrt(n);
+            bool status = true;
+            int i = 2;
 
-            data.primo = num;
-            final(l, data);
+            while ((i <= limit) and (status == true))
+            {
+                if ((fmod(n, i)) == 0)
+                {
+                    status = false;
+                }
+
+                i++;
+            }
+
+            if (status)
+            {
+                insere_direita(listad, n);
+            }
+            
+            return status;
+            
         }
-        primo = 1;
-        }
+    }
     
+    
+}
 
-
-    Ticks[1] = clock();
-
-    //Fechar arquivo
-    fclose(fp);
-    double Tempo = (Ticks[1] - Ticks[0]) * 1000.0 / CLOCKS_PER_SEC;
-    Tempo = Tempo / 1000;
-    printf("Tempo gasto: %.3f Segundos.\n", Tempo);
-
-    printf("Calculos realizados: %.0lf\n", i);
-
-    calcSeg = i / Tempo;
-    printf("%.1f Calculos/Seg\n", calcSeg);
-    printf("Primos encontrados: %i\n", l->size);
-
-    printf("First: %i\n", (atPos(l, 0))->number.primo);
-    printf("Second: %i\n", (atPos(l, 1))->number.primo);
-    printf("Thrind: %i\n", (atPos(l, 2))->number.primo);
-    printf("Fourty: %i\n", (atPos(l, 3))->number.primo);
-    system("PAUSE");
-
-    //Abrir arquivo para leitura
-    fp = fopen("primos.txt", "r");
-    if (fp == NULL)
+void iniciar_lista(struct header *listad)
+{
+    if (listad->qntd == 0)
     {
-        printf("Erro ao abrir o arquivo\n");
-        return 1;
+        insere_direita(listad, 2);
     }
-    printf("Arquivo PRIMOS aberto com sucesso.\n");
+}
 
-    //Ir para o final do arquivo
-    while ((fscanf(fp, "%i\n", &lastPrimo)) != EOF)
+void check_redundancia(struct header *listad, int num)
+{
+    // O numero ja existe na lista
+    // retorna True
+    //
+    // Caso não, retorna False
+    struct nodo *aux, *prev;
+    aux = listad->inicio;
+    prev = NULL;
+    bool status = false;
+
+    if (listad->qntd >= 1)
     {
-        //Le o arquivo e salva o numero na lista
-    }
-
-    //Fechar arquivo
-    fclose(fp);
-
-    printf("Gravando TXT\n");
-    if (l->last->number.primo > lastPrimo) {
-        fp = fopen("primos.txt", "r");
-        Node *aux = l->head;
-        while((aux->number.primo) <= lastPrimo){
-            aux = aux->next;
+        while ((aux != NULL) and (status == false) and (aux->num <= num))
+        {
+            if (aux->num == num)
+            {
+                status = true;
+            }else
+            {
+                prev = aux;
+            }
+            
+            aux = aux->prox;
         }
-        fclose;
 
-        fp = fopen("primos.txt", "a");
-        while(aux->next != NULL){
-            fprintf(fp,"\n%i", aux->number.primo);
-            aux = aux->next;
+        if (prev != NULL)
+        {
+            if (status == false)
+            {
+                if (prev == (listad->fim))
+                {
+                    insere_direita(listad, num);
+                }else
+                {
+                    // Insere a direita do node prev
+                    struct nodo *novo;
+                    novo = (struct nodo *)malloc(sizeof(struct nodo));
+
+                    novo->num = num;
+                    novo->ant = prev;
+                    novo->prox = prev->prox;
+
+                    prev->prox = novo;
+                    novo->prox->ant = novo;
+
+                    listad->qntd++;
+                }
+            }
         }
-        fclose(fp);
-        printf("Gravado");
-        system("PAUSE");
+        
+        
         
     }
+}
+
+void insere_primo(struct header *listad, int n)
+{
+            bool status = check_primo(n, listad);
+
+        //printf("NUM = %i | Status = %i\n", n, status);
+
+        if(status == true)
+        {
+            if (listad->qntd > 1)
+            {
+                if (n > listad->fim->num)
+                {
+                    insere_direita(listad, n);
+                }else{
+                    struct nodo *aux = listad->inicio;
+
+                    while (aux->num < n)
+                    {
+                        aux = aux->prox;
+                    }
+
+                    if (aux == listad->inicio)
+                    {
+                        struct nodo *p, *aux;
+                        aux = listad->inicio;
+
+                        p = (struct nodo *)malloc(sizeof(struct nodo));
+                        p->num = n;
+                        p->prox = aux;
+                        p->ant = aux->ant;
+
+                        listad->inicio = p;
+                    }else{
+                        struct nodo *p;
+                        p = (struct nodo *)malloc(sizeof(struct nodo));
+                        p->num = n;
+                        p->prox = aux;
+                        p->ant = aux->ant;
+
+                        aux->ant->prox = p;
+                        aux->ant = p;
+                    }
+                    listad->qntd++;
+                }
+            }else if(listad->qntd == 1){
+                if (n > listad->inicio->num)
+                {
+                    insere_direita(listad, n);
+                }else{
+                    struct nodo *p, *aux;
+                    aux = listad->inicio;
+
+                    p = (struct nodo *)malloc(sizeof(struct nodo));
+                    p->num = n;
+                    p->prox = aux;
+                    p->ant = aux->ant;
+
+                    listad->inicio = p;
+                    listad->qntd++;
+                }
+                
+            }   
+        }else{
+            //printf("%i nao eh primo\n", n);
+        }
     
-    return 0;
-}
-//===Funcoes===
-list *createList()
-{
-    list *lista = (list *)malloc(sizeof(list));
-    lista->size = 0;
-    lista->head = NULL;
-    lista->last = NULL;
-
-    return lista;
 }
 
-void push(list *lista, DataNode num)
+void libera_lista (struct header **listad )
 {
-    Node *newNode = (Node *)malloc(sizeof(Node));
+    struct nodo *aux, *p ;
+    aux = (*listad)->inicio;
 
-    newNode->number = num;
-    newNode->next = lista->head;
-    lista->head = newNode;
-    lista->last = newNode;
-    lista->size++;
-
-    //Verificar final da lista
-}
-
-void printList(list *lista)
-{
-
-    if (isEmpty(lista))
+    while (aux != NULL)
     {
-        printf("Lista vazia\n");
+        p = aux-> prox;
+        free(aux);
+        aux = p;
     }
-    else
+}
+
+void menu(struct header *listad)
+{
+    int op = 9;
+
+    while (op != 0)
     {
-        Node *pointer = lista->head;
-        while (pointer != NULL)
+        printf("=== MENU ===\n");
+        printf("1 - Testar valor unico\n");
+        printf("2 - Testar intervalo\n");
+        printf("3 - Carregar Base de Dados\n");
+        printf("4 - Gravar Base de Dados\n");
+        printf("0 - Sair\n");
+
+        scanf("%i", &op);
+
+        switch (op)
         {
-            printf("%d\n", pointer->number.primo);
-            pointer = pointer->next;
+        case 1 :
+            valor_unico(listad);
+            break;
+        
+        case 2 :
+            valor_intervalo(listad);
+            break;
+        
+        case 3 :
+            db_read(listad);
+            break;
+        
+        case 4 :
+            db_write(listad);
+            break;
+        
+        case 0 :
+            /* code */
+            break;
+        default:
+            printf("Opcao invalida!\n");
+            getch();
+            break;
         }
     }
+    printf("Saindo do Menu\n");
 }
 
-bool isEmpty(list *lista)
+void valor_unico(struct header *listad)
 {
-    return (lista->size == 0);
+    printf("=== VALOR UNICO ===\n");
+    getch();
 }
 
-void pop(list *lista)
+void valor_intervalo(struct header *listad)
 {
-    if (!isEmpty(lista))
+    int num;
+    printf("=== TESTAR INTERVALO ===\n");
+    printf("Digite o numero desejado: ");
+    scanf("%i", &num);
+
+    printf("Testando todos os numeros primos até %i\n", num);
+
+    clock_t Ticks[2];
+    Ticks[0] = clock();
+
+    for (int i = ((listad->fim->num) + 1); i <= num; i++)
     {
-        Node *pointer = lista->head;
-        lista->head = pointer->next;
+        insere_primo(listad, i);
+    }
 
-        free(pointer);
-        lista->size--;
+    Ticks[1] = clock();
+    double Tempo = (Ticks[1] - Ticks[0]) * 1000.0 / CLOCKS_PER_SEC;
+
+    printf("Total primos encontrados: %i\n", listad->qntd);
+    printf("Tempo gasto: %g ms.\n", Tempo);
+    //getch();
+
+    
+    printf("Deseja ver a lista completa?[s/n] ");
+    char op = getch();
+
+    if (op == 's')
+    {
+        mostra_lista(listad);
     }
 }
 
-Node *atPos(list *lista, int index)
+void db_read(struct header *listad)
 {
-    if (index >= 0 && index < lista->size)
+    printf("=== Carregar Base de Dados ===\n");
+
+    int aux;
+    string line;
+    ifstream myfile ("10M.txt");
+    if (myfile.is_open())
     {
-        Node *pointer = lista->head;
-        int i;
-        for (i = 0; i < index; i++)
+        printf("Lendo arquivo...\n");
+        while ( getline (myfile,line) )
         {
-            pointer = pointer->next;
+            aux = stoi(line);
+            if(listad->fim->num != aux)
+            {
+                insere_direita(listad, aux);
+            }
         }
-        return pointer;
+        myfile.close();
+        printf("Arquivo lido com sucesso!");
     }
-    printf("Indice Invalido\n");
-    return NULL;
+
+  else cout << "Unable to open file"; 
+
+    getch();
 }
 
-int indexOf(list *lista, Node *node)
+void db_write(struct header *listad)
 {
-    if (node != NULL)
-    {
-        Node *pointer = lista->head;
-        int index = 0;
+    printf("=== Gravar Base de Dados ===\n");
 
-        while (pointer != node && pointer != NULL)
+    struct nodo *aux;
+    aux = listad->inicio;
+
+    ofstream myfile ("output.txt");
+    if (myfile.is_open())
+    {
+        printf("Gravando arquivo...\n");
+        while (aux != NULL)
         {
-            pointer = pointer->next;
-            index++;
+            myfile << aux->num << "\n";
+            aux = aux->prox;
         }
 
-        if (pointer != NULL)
-        {
-            return index;
-        }
+        myfile.close();
+        printf("Gravado com sucesso!\n");
     }
-    printf("Node nao pertence a lista\n");
-    return -1;
-}
-
-void erase(list *lista, int index)
-{
-    if (index == 0)
-    {
-        pop(lista);
+    else{
+        cout << "Unable to open file";
     }
-    else
-    {
-        Node *current = atPos(lista, index);
-        if (current != NULL)
-        {
-            Node *previous = atPos(lista, index - 1);
-            previous->next = current->next;
-
-            free(current);
-            lista->size--;
-        }
-    }
-}
-
-void insert(list *lista, DataNode data, int index)
-{
-    if (index == 0)
-    {
-        push(lista, data);
-    }
-    else
-    {
-        Node *current = atPos(lista, index);
-        if (current != NULL)
-        {
-            Node *previous = atPos(lista, index - 1);
-            Node *newNode = (Node *)malloc(sizeof(Node));
-
-            newNode->number = data;
-
-            previous->next = newNode;
-            newNode->next = current;
-            lista->size++;
-        }
-    }
-}
-
-void final(list *lista, DataNode data)
-{
-    if (lista->head != NULL)
-    {
-        //Adicionar ao final da lista
-        Node *last = lista->last;
-        if (last->next == NULL)
-        {
-            Node *newNode = (Node *)malloc(sizeof(Node));
-            newNode->number = data;
-            newNode->next = last->next;
-
-            last->next = newNode;
-
-            lista->size++;
-            lista->last = newNode;
-        }
-    }
-    else
-    {
-        push(lista, data);
-    }
+    getch();
 }
