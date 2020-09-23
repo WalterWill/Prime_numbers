@@ -1,5 +1,7 @@
 #include <iostream>
 #include <stdio.h>
+#include <stdint.h>
+#include <inttypes.h>
 #include <malloc.h>
 #include <conio.h>
 #include <math.h>
@@ -11,23 +13,23 @@ using namespace std;
 
 // Estruturas
 struct nodo{
-    int num;
+    int64_t num;
     struct nodo *prox, *ant;
 };
 
 struct header{
     struct nodo *inicio, *fim;
-    int qntd;
+    int64_t qntd;
 };
 
 // Prototipo das funcoes
 void cria_lista (struct header **listad);
-void insere_direita (struct header  *listad , int valor);
+void insere_direita (struct header  *listad ,int64_t valor);
 void mostra_lista (struct header *listad );
-bool check_primo (int n, struct header *listad);
+bool check_primo (int64_t n, struct header *listad);
 void iniciar_lista(struct header *listad);
 void check_redundancia(struct header *listad);
-void insere_primo(struct header *listad, int n);
+void insere_primo(struct header *listad,int64_t n);
 void libera_lista (struct header **listad );
 void menu(struct header *listad);
 void valor_unico(struct header *listad);
@@ -38,7 +40,7 @@ void db_write(struct header *listad);
 int main()
 {
     struct header *L;
-    int num;
+    int64_t num;
 
     cria_lista(&L);
     iniciar_lista(L);
@@ -74,7 +76,7 @@ void cria_lista (struct header **listad)
    *listad=lista;
 }
 
-void insere_direita (struct header  *listad , int valor)
+void insere_direita (struct header  *listad , int64_t valor)
 {
  	struct nodo  *p, *aux;
 	p= (struct nodo *) malloc(sizeof(struct nodo));
@@ -108,7 +110,7 @@ void mostra_lista (struct header *listad)
   printf("\n");
 }
 
-bool check_primo (int n, struct header *listad)
+bool check_primo (int64_t n, struct header *listad)
 {
     if (n < 1)
     {
@@ -140,7 +142,7 @@ bool check_primo (int n, struct header *listad)
         {
             float limit = sqrt(n);
             bool status = true;
-            int i = 2;
+            int64_t i = 2;
 
             while ((i <= limit) and (status == true))
             {
@@ -173,7 +175,7 @@ void iniciar_lista(struct header *listad)
     }
 }
 
-void check_redundancia(struct header *listad, int num)
+void check_redundancia(struct header *listad, int64_t num)
 {
     // O numero ja existe na lista
     // retorna True
@@ -229,7 +231,7 @@ void check_redundancia(struct header *listad, int num)
     }
 }
 
-void insere_primo(struct header *listad, int n)
+void insere_primo(struct header *listad, int64_t n)
 {
             bool status = check_primo(n, listad);
 
@@ -363,17 +365,17 @@ void valor_unico(struct header *listad)
 
 void valor_intervalo(struct header *listad)
 {
-    int num;
+    int64_t num;
     printf("=== TESTAR INTERVALO ===\n");
     printf("Digite o numero desejado: ");
-    scanf("%i", &num);
+    scanf("%lld", &num);
 
-    printf("Testando todos os numeros primos até %i\n", num);
+    printf("Testando todos os numeros primos até %lld\n", num);
 
     clock_t Ticks[2];
     Ticks[0] = clock();
 
-    for (int i = ((listad->fim->num) + 1); i <= num; i++)
+    for (int64_t i = ((listad->fim->num) + 1); i <= num; i++)
     {
         insere_primo(listad, i);
     }
@@ -399,9 +401,9 @@ void db_read(struct header *listad)
 {
     printf("=== Carregar Base de Dados ===\n");
 
-    int aux;
+    int64_t aux;
     string line;
-    ifstream myfile ("10M.txt");
+    ifstream myfile ("output.txt");
     if (myfile.is_open())
     {
         printf("Lendo arquivo...\n");
